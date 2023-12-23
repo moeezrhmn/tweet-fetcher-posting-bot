@@ -5,6 +5,10 @@ const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const puppeteer = require('puppeteer');
 
+
+
+
+
 const app = express();
 const port = 3000;
 
@@ -71,6 +75,7 @@ async function fetchTweets(username) {
       if (items && items.length > 0) {
          const firstItem = items[0];
          const tweetText = firstItem.title;
+         const tweet_id = firstItem.id
 
          let tweetImage = null;
          if (firstItem.content_html) {
@@ -83,6 +88,7 @@ async function fetchTweets(username) {
          return {
             tweet: tweetText,
             image: tweetImage,
+            tweet_id: tweet_id
          };
       } else {
          return { error: true, message: `No tweets found for ${username}` };
@@ -110,53 +116,65 @@ async function fetchTweetsForUsernames(usernames) {
 }
 
 
-async function loginToTwitter(email, password) {
-   const browser = await puppeteer.launch({
-      headless: "new",
-   });
-   const page = await browser.newPage();
 
-   // Navigate to Twitter login page
-   await page.goto('https://twitter.com/');
-
-   await page.click('a[data-testid="loginButton"]');
-
-   await page.waitForSelector('input[autocomplete="username"]');
-
-   await page.type('input[autocomplete="username"]', email);
-
-   await page.click('div[aria-label="Next"]');
-
-   await page.waitForSelector('input[autocomplete="current-password"]');
-
-   await page.type('input[autocomplete="current-password"]', password);
-
-   await page.click('div[data-testid="LoginForm_Login_Button"]');
-
-   await browser.close();
-}
 
 async function saveTweetsToDatabaseAndLogin() {
    try {
       const usernamesArray = await userDetails.find().distinct('username');
-
       const result = await fetchTweetsForUsernames(usernamesArray);
 
-      for (const username of Object.keys(result)) {
-         const { tweet, image } = result[username];
+      // Array to store new tweets
+      const newTweets = [];
 
-         await userDetails.updateOne({ username: username }, { tweet, image_url: image });
+      for (const username of Object.keys(result)) {
+         const { tweet, image, tweet_id } = result[username];
+         const latestTweetIdFromDB = (await userDetails.findOne({ username: username }))?.tweet_id;
+
+         if (latestTweetIdFromDB !== tweet_id) {
+            // New tweet found
+            newTweets.push({
+               username,
+               tweet,
+               image_url: image,
+               // Add other relevant details
+            });
+
+            await userDetails.updateOne({ username: username }, { tweet, image_url: image, tweet_id: tweet_id });
+            console.log(`New tweet for ${username}: ${tweet}`);
+         } else {
+            // Tweet already exists
+            console.log(`Tweet for ${username} is already saved`);
+         }
       }
 
-      const email = '';
-      const password = '';
-      await loginToTwitter(email, password);
+      // Print or use the new tweets array
+      console.log("New tweets:", newTweets);
 
       console.log('Tweets data saved to the database and user logged in.');
    } catch (error) {
       console.error('Error in cron job:', error.message);
    }
 }
+
+// async function saveTweetsToDatabaseAndLogin() {
+//    try {
+//       const usernamesArray = await userDetails.find().distinct('username');
+
+//       const result = await fetchTweetsForUsernames(usernamesArray);
+
+//       for (const username of Object.keys(result)) {
+//          const { tweet, image } = result[username];
+
+//          await userDetails.updateOne({ username: username }, { tweet, image_url: image });
+//       }
+
+
+
+//       console.log('Tweets data saved to the database and user logged in.');
+//    } catch (error) {
+//       console.error('Error in cron job:', error.message);
+//    }
+// }
 
 cron.schedule('*/1 * * * *', async () => {
    try {
