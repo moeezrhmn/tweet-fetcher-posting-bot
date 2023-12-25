@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const connect_db = () => {
-
-   mongoose.connect('mongodb://127.0.0.1:27017/tweets', {
+//mongodb://127.0.0.1:27017/tweets
+   mongoose.connect('mongodb+srv://admin:admin@cluster0.seo0f.mongodb.net/tweet', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
    });
