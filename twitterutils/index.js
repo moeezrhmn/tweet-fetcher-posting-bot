@@ -116,9 +116,9 @@ module.exports = class Twitter {
         await nextButtonLogin.click();
 
         await this.sleep(2000);
-   }
+    }
 
-    async tweet({ content, imgPath= '' }) {
+    async tweet({ content, imgPath = '' }) {
         const activeURL = await this.page.url();
         const url = `https://twitter.com/home`;
 
@@ -129,13 +129,13 @@ module.exports = class Twitter {
         const tweetModal = await this.page.$x(this.xpaths.tweet_modal);
         await tweetModal[0].click()
         await tweetModal[0].type(content, this.defaultType)
-        
+
         if (imgPath) {
             console.log('image ', imgPath)
             const fileInput = await this.page.$('input[type="file"]');
             await fileInput.uploadFile(imgPath);
-            
-            await this.page.waitForTimeout(2000); 
+
+            await this.page.waitForTimeout(2000);
             // await new Promise(r => setTimeout(r, 2000));
         }
 
@@ -153,7 +153,7 @@ module.exports = class Twitter {
         const tweetModal = await this.page.$x(this.xpaths[action]);
         await tweetModal[0].click()
 
-        if(action === 'retweet'){
+        if (action === 'retweet') {
             const tweetModal = await this.page.$x(this.xpaths['retweet_confirm']);
             await tweetModal[0].click()
         }
