@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-module.exports = class Twitter {
+module.exports = class X {
     constructor({ debug }) {
         this.debug = debug;
 
@@ -12,10 +12,10 @@ module.exports = class Twitter {
         this.xpaths = {
             'modal_helper': '//*[@id="modal-header"]/span/span',
 
-            'login_button': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/div/div',
-            'login_email': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[5]/label/div/div[2]/div/input',
-            'login_next_button': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]/div',
-            'login_password': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input',
+            'login_button': '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div[1]/div/div/button',
+            'login_email': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[4]/label/div/div[2]/div/input',
+            'login_next_button': '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/button[2]',
+            'login_password': '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input',
 
             'verification_username': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div[2]/label/div/div[2]/div/input',
             'verification_next_button': '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div',
@@ -24,9 +24,9 @@ module.exports = class Twitter {
             'tweet_div': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div[2]/div[1]/div/div/div',
             'tweet_modal': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[1]',
             // 'tweet_enter': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div/div[2]/div[3]',
-            'tweet_enter': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div/div/div[3]',
+            'tweet_enter': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div/div/button',
 
-            'overlay': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/section/div/div/div[1]/div/div/article',
+            'overlay': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/section/div/div/div[1]/div/div/article',
             'heart': '//*[starts-with(@id, "id__")]/div[3]/div/div/div/div',
             'retweet': '//*[starts-with(@id, "id__")]/div[2]/div/div/div/div',
             'retweet_confirm': '//*[@id="layers"]/div[2]/div/div/div/div[2]/div/div[3]/div/div/div/div',
@@ -40,8 +40,13 @@ module.exports = class Twitter {
             'verification_badge': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[2]/div[1]/div/div[1]/div/div/span[2]/div/div',
 
             'search_results': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/section/div/div/div[9]',
-            'search_bar': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[2]/div/div/div/form/div[1]/div/div/div/label/div[2]/div/input'
+            'search_bar': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[1]/div[1]/div[1]/div/div/div/div/div[2]/div[2]/div/div/div/form/div[1]/div/div/div/label/div[2]/div/input',
             // 'ad': '//*[@id="layers"]/div[3]/div/div/div/div/div/div[2]/div[2]/div/div[2]/div/div[2]/div[1]/div[1]',
+
+            // Reply
+            'reply_input':'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/section/div/div/div[1]/div/div/div/div/div[2]/div[2]/div/div/div/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/div/div[1]/div/div/div/div/div/div/div/div/div/div/span/span',
+            'reply_button':'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/section/div/div/div[1]/div/div/div/div/div[2]/div[2]/div/div/div/div[2]/div[2]/div[2]/div/div/div/button',
+            'reply_tweet_modal':'//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/section/div/div/div[1]/div/div/div/div/div[2]/div[1]/div/div/div/div[2]/div[1]'
         };
         this.defaultType = { delay: 30 };
         this.sleep = (waitTimeInMs) => new Promise((resolve) => setTimeout(resolve, waitTimeInMs));
@@ -50,7 +55,7 @@ module.exports = class Twitter {
         this.page = null;
     }
 
-    async init() {
+    async init({username='', tweet_id='', type=''}) {
         const options = { headless: true }
 
         if (this.debug) options.headless = false;
@@ -64,8 +69,12 @@ module.exports = class Twitter {
             const deserializedCookies = JSON.parse(cookies);
             await this.page.setCookie(...deserializedCookies);
         }
-
-        await this.page.goto('https://twitter.com/home');
+        
+        if(type == 'reply' && username && tweet_id ){
+            await this.page.goto(`https://x.com/${username}/status/${tweet_id}`);
+        }else{
+            await this.page.goto('https://x.com/home');
+        }
     }
 
     async inputPassword(password) {
@@ -92,7 +101,7 @@ module.exports = class Twitter {
         const modal = await this.xpathToContent('modal_helper');
 
         if (!modal.includes('Sign in')) return;
-        await this.page.goto('https://twitter.com/i/flow/login');
+        await this.page.goto('https://x.com/i/flow/login');
 
         const emailInput = await this.page.waitForXPath(this.xpaths.login_email, { visible: true });
         await emailInput.type(email, this.defaultType);
@@ -120,7 +129,7 @@ module.exports = class Twitter {
 
     async tweet({ content, imgPath = '' }) {
         const activeURL = await this.page.url();
-        const url = `https://twitter.com/home`;
+        const url = `https://x.com/home`;
 
         if (activeURL !== url) await this.page.goto(url);
 
@@ -135,19 +144,17 @@ module.exports = class Twitter {
             const fileInput = await this.page.$('input[type="file"]');
             await fileInput.uploadFile(imgPath);
 
-            await this.page.waitForTimeout(2000);
-            // await new Promise(r => setTimeout(r, 2000));
+            // await this.page.waitForTimeout(2000);
+            await new Promise(r => setTimeout(r, 2000));
         }
 
-        const nextButton = await this.page.waitForXPath(this.xpaths.tweet_enter, { visible: true });
-        // console.log('tweet enter button => ',nextButton)
-        await nextButton.click();
-
-        await this.sleep(500);
+        const postBtn = await this.page.waitForXPath(this.xpaths.tweet_enter, { visible: true });
+        await postBtn.click();
+        await this.sleep(6000);
     }
 
     async execute(action, { user, id }) {
-        await this.page.goto(`https://twitter.com/${user}/status/${id}`);
+        await this.page.goto(`https://x.com/${user}/status/${id}`);
         await this.page.waitForXPath(this.xpaths.overlay);
 
         const tweetModal = await this.page.$x(this.xpaths[action]);
@@ -159,6 +166,28 @@ module.exports = class Twitter {
         }
     }
 
+    async reply_tweet({image_path='', content}){
+        // await this.page.waitForXPath(this.xpaths.overlay);
+
+        const replyTweetModal = await this.page.$x(this.xpaths.reply_tweet_modal);
+        console.log('replyTweetModal => ', replyTweetModal)
+        await replyTweetModal[0].click()
+        await replyTweetModal[0].type(content, this.defaultType)
+        // console.log('replyTweetModal[0] => ', replyTweetModal)        
+
+        if(image_path){
+            const fileInput = await this.page.$('input[type="file"]');
+            await fileInput.uploadFile(image_path);
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
+        const replyButton = await this.page.waitForXPath(this.xpaths.reply_button, { visible: true });
+        await replyButton.click();
+        console.log('reply button => ', replyButton)
+
+        await new Promise(r => setTimeout(r, 5000));
+    }
+
     async classToContent(el) {
         console.log(el)
         await this.page.evaluate((el) => {
@@ -168,7 +197,7 @@ module.exports = class Twitter {
 
     async getTweets() {
         const activeURL = await this.page.url();
-        const url = `https://twitter.com/search?q=%40${this.username}&src=typed_query&f=live`
+        const url = `https://x.com/search?q=%40${this.username}&src=typed_query&f=live`
 
         if (activeURL !== url) {
             await this.page.goto(url);
@@ -187,7 +216,7 @@ module.exports = class Twitter {
         return content;
     }
     async getUser({ user }) {
-        await this.page.goto(`https://twitter.com/${user}`);
+        await this.page.goto(`https://x.com/${user}`);
         await this.page.waitForXPath(this.xpaths.profile_overlay);
 
         const innerHtml = await this.page.waitForSelector('.css-1dbjc4n.r-13awgt0.r-18u37iz.r-1w6e6rj');

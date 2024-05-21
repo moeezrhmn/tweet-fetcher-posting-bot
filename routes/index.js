@@ -7,7 +7,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const Twitter = require("../twitterutils/index");
+const X = require("../twitterutils/index");
 const path = require("path");
 const { cleanItem } = require("../twitterutils/clean_html");
 const { fetch_tweet } = require("../twitterutils/fetch_tweet");
@@ -110,7 +110,8 @@ async function saveTweetsToDatabaseAndLogin() {
         newTweets.push({
           username,
           tweet,
-          image_url: image,
+          image_url: image,   
+          tweet_id
           // Add other relevant details
         });
         await userDetails.updateOne(
@@ -145,24 +146,34 @@ async function getReadyAndTweet(newTweets) {
     );
     console.log("Image path ", imagePath);
     let content = `${tweet.tweet} \n`;
-    await tweeting({ contents: content, imgpath: imagePath });
+    await tweeting({ contents: content, imgpath: imagePath, tweet_obj:tweet });
   }
 }
-async function tweeting({ contents, imgpath = "" }) {
+async function tweeting({ contents, imgpath = "", tweet_obj }) {
   console.log("now sending tweet");
-  const client = new Twitter({ debug: true });
+  const client = new X({ debug: true });
 
-  await client.init();
-  await client.login({
-    email: "",
-    password: "",
-    username: "",
-  });
-
+  
   console.log("Logged in!");
-  await client
-    .tweet({ content: contents, imgPath: imgpath })
-    .then((res) => console.log("proceeded"));
+  //   await client
+  //     .tweet({ content: contents, imgPath: imgpath })
+  //     .then((res) => console.log("proceeded"));
+   try {
+      await client.init({ username:tweet_obj?.username || '' , tweet_id:tweet_obj?.tweet_id || '', type:'reply' });
+      await client.login({
+      email: process.env.USER_EMAIL,
+      password: process.env.USER_PASSWORD,
+      username: process.env.USER_NAME,
+      });
+      await client
+      .reply_tweet({ content: contents, image_path: imgpath })
+      .then((res) => {
+         client.browser.close();
+         console.log("reply tweet proceeded");
+      });
+   } catch (error) {
+      client.browser.close();
+   }
 }
 
 function getRandImage() {
@@ -213,6 +224,7 @@ async function downloadImage(url, destDir, defaultExtension = ".jpg") {
 
 cron.schedule("*/1 * * * *", async () => {
   try {
+   // return;
     await saveTweetsToDatabaseAndLogin();
   } catch (error) {
     console.error("Error in cron job:", error.message);
