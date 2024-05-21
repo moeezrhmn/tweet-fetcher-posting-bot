@@ -55,7 +55,7 @@ module.exports = class X {
         this.page = null;
     }
 
-    async init({username='', tweet_id='', type=''}) {
+    async init({username='', tweet_id='', type='new_tweet'}) {
         const options = { headless: true }
 
         if (this.debug) options.headless = false;
@@ -69,12 +69,11 @@ module.exports = class X {
             const deserializedCookies = JSON.parse(cookies);
             await this.page.setCookie(...deserializedCookies);
         }
-        
+        let puppeteerURL = 'https://x.com/home';
         if(type == 'reply' && username && tweet_id ){
-            await this.page.goto(`https://x.com/${username}/status/${tweet_id}`);
-        }else{
-            await this.page.goto('https://x.com/home');
+            puppeteerURL = `https://x.com/${username}/status/${tweet_id}`;
         }
+        await this.page.goto(puppeteerURL);
     }
 
     async inputPassword(password) {
@@ -128,7 +127,7 @@ module.exports = class X {
     }
 
     async tweet({ content, imgPath = '' }) {
-        const activeURL = await this.page.url();
+        const activeURL = this.page.url();
         const url = `https://x.com/home`;
 
         if (activeURL !== url) await this.page.goto(url);
@@ -143,14 +142,12 @@ module.exports = class X {
             console.log('image ', imgPath)
             const fileInput = await this.page.$('input[type="file"]');
             await fileInput.uploadFile(imgPath);
-
             // await this.page.waitForTimeout(2000);
             await new Promise(r => setTimeout(r, 2000));
         }
-
         const postBtn = await this.page.waitForXPath(this.xpaths.tweet_enter, { visible: true });
         await postBtn.click();
-        await this.sleep(6000);
+        await new Promise(r => setTimeout(r, 5000));
     }
 
     async execute(action, { user, id }) {

@@ -127,11 +127,11 @@ async function saveTweetsToDatabaseAndLogin() {
     await getReadyAndTweet(newTweets);
 
     // Print or use the new tweets array
-    console.log("New tweets:", newTweets);
+    console.log("New tweets Fetched:", newTweets);
 
     console.log("Tweets data saved to the database ");
   } catch (error) {
-    console.error("Error in cron job:", error.message);
+    console.error("Error in saveTweetsToDatabaseAndLogin method :", error.message);
   }
 }
 
@@ -139,7 +139,6 @@ async function getReadyAndTweet(newTweets) {
   // if(newTweets && newTweets.length == 0 ) return;
   console.log("getting ready to tweet.");
   for (const tweet of newTweets) {
-    console.log(getRandImage());
     const imagePath = await downloadImage(
       !tweet.image_url ? getRandImage() : tweet.image_url,
       "./tweetImage"
@@ -155,9 +154,6 @@ async function tweeting({ contents, imgpath = "", tweet_obj }) {
 
   
   console.log("Logged in!");
-  //   await client
-  //     .tweet({ content: contents, imgPath: imgpath })
-  //     .then((res) => console.log("proceeded"));
    try {
       await client.init({ username:tweet_obj?.username || '' , tweet_id:tweet_obj?.tweet_id || '', type:'reply' });
       await client.login({
@@ -174,6 +170,29 @@ async function tweeting({ contents, imgpath = "", tweet_obj }) {
    } catch (error) {
       client.browser.close();
    }
+}
+
+async function doNewTweet(){
+   console.log("NEW TWEET PORCESSING START ");
+
+   var clientNew = new X({ debug: true });
+   console.log("Logged in!");
+
+    try {
+       await clientNew.init({username:'', tweet_id:'', type:'new_tweet'});
+       await clientNew.login({
+       email: process.env.USER_EMAIL,
+       password: process.env.USER_PASSWORD,
+       username: process.env.USER_NAME,
+       });
+       await clientNew.tweet({ content: 'New Tweet done after it reply automatically 2' })
+           .then((res) => {
+            clientNew.browser.close();
+            console.log('New Tweet done successfully.')
+           });
+    } catch (error) {
+       clientNew.browser.close();
+    }
 }
 
 function getRandImage() {
@@ -224,10 +243,17 @@ async function downloadImage(url, destDir, defaultExtension = ".jpg") {
 
 cron.schedule("*/1 * * * *", async () => {
   try {
-   // return;
     await saveTweetsToDatabaseAndLogin();
   } catch (error) {
-    console.error("Error in cron job:", error.message);
+    console.error("Error in cron job for Reply Tweet :", error.message);
+  }
+});
+
+cron.schedule("*/2 * * * *", async () => {
+  try {
+    await doNewTweet()
+  } catch (error) {
+    console.error("Error in cron job for New Tweet:", error.message);
   }
 });
 
