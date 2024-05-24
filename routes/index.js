@@ -13,6 +13,8 @@ const { cleanItem } = require("../twitterutils/clean_html");
 const { fetch_tweet } = require("../twitterutils/fetch_tweet");
 require("dotenv").config();
 
+const  { getRandImage, downloadImage, fetchTweets } = require("../utils/helpers");
+
 const app = express();
 const port = 4000;
 
@@ -61,24 +63,6 @@ app.delete("/deleteUser/:userId", async (req, res) => {
   }
 });
 
-async function fetchTweets(username) {
-  try {
-    let tweet_data = await fetch_tweet(username);
-
-    return {
-      tweet: tweet_data.timeline[0].text,
-      image:
-        "https://images.unsplash.com/photo-1575936123452-b67c3203c357?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-      tweet_id: tweet_data.timeline[0].tweet_id,
-    };
-  } catch (error) {
-    console.error(`Error fetching tweets for ${username}:`, error.message);
-    return {
-      error: true,
-      message: `Error fetching tweets for ${username}: ${error.message}`,
-    };
-  }
-}
 
 async function fetchTweetsForUsernames(usernames) {
   const result = {};
@@ -139,15 +123,14 @@ async function getReadyAndTweet(newTweets) {
   // if(newTweets && newTweets.length == 0 ) return;
   console.log("getting ready to tweet.");
   for (const tweet of newTweets) {
-    const imagePath = await downloadImage(
-      !tweet.image_url ? getRandImage() : tweet.image_url,
-      "./tweetImage"
-    );
+   const imagePath = await getRandImage();
+   
     console.log("Image path ", imagePath);
     let content = `${tweet.tweet} \n`;
     await tweeting({ contents: content, imgpath: imagePath, tweet_obj:tweet });
   }
 }
+
 async function tweeting({ contents, imgpath = "", tweet_obj }) {
   console.log("now sending tweet");
   const client = new X({ debug: true });
@@ -195,52 +178,12 @@ async function doNewTweet(){
     }
 }
 
-function getRandImage() {
-  const images = [
-    "https://images.unsplash.com/photo-1575936123452-b67c3203c357?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "https://plus.unsplash.com/premium_photo-1676637000058-96549206fe71?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "https://plus.unsplash.com/premium_photo-1680553492268-516537c44d91?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "https://images.unsplash.com/photo-1574169208507-84376144848b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "https://images.unsplash.com/photo-1595147389795-37094173bfd8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGltYWdlfGVufDB8fDB8fHww",
-    "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "https://plus.unsplash.com/premium_photo-1687382111414-7b87afa5da34?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGltYWdlfGVufDB8fDB8fHww",
-    "https://images.unsplash.com/photo-1598214886806-c87b84b7078b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGltYWdlfGVufDB8fDB8fHww",
-    "https://plus.unsplash.com/premium_photo-1682513184135-b7b9b76fb4eb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGltYWdlfGVufDB8fDB8fHww",
-    "https://images.unsplash.com/photo-1621155346337-1d19476ba7d6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGltYWdlfGVufDB8fDB8fHww",
-  ];
-  const randomIndex = Math.floor(Math.random() * images.length);
-  const randomImage = images[randomIndex];
-  return randomImage;
-}
 
-async function downloadImage(url, destDir, defaultExtension = ".jpg") {
-  const response = await axios({
-    method: "GET",
-    url: url,
-    responseType: "stream",
-  });
 
-  const fileName = `image_${Date.now()}${defaultExtension}`;
-  const destPath = path.join(destDir, fileName);
 
-  const writer = fs.createWriteStream(destPath);
 
-  return new Promise((resolve, reject) => {
-    response.data.pipe(writer);
-    let error = null;
-    writer.on("error", (err) => {
-      error = err;
-      writer.close();
-      reject(err);
-    });
-    writer.on("close", () => {
-      if (!error) {
-        resolve(destPath);
-      }
-    });
-  });
-}
 
+//  CRON JOBS
 cron.schedule("*/1 * * * *", async () => {
   try {
     await saveTweetsToDatabaseAndLogin();
@@ -257,8 +200,12 @@ cron.schedule("*/2 * * * *", async () => {
   }
 });
 
+
+
+
+// SERVER LISTENING  
 app.listen(port, () => {
-  console.log(`Server is running at ${port}`);
+  console.log(`Server is running on localhost:${port}`);
 });
 
 module.exports = app;
