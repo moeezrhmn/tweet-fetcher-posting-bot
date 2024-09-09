@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const apiKey = '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';
+const apiKey = process.env.CHATGPT_API_KEY;
 
 async function callChatGPT(prompt) {
   const apiUrl = 'https://api.openai.com/v1/chat/completions';
