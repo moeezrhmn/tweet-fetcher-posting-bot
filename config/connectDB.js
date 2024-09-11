@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const connect_db = () => {
 //mongodb://127.0.0.1:27017/tweets
-   mongoose.connect('mongodb+srv://admin:admin@cluster0.seo0f.mongodb.net/tweet', {
+   mongoose.connect('', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
    });
